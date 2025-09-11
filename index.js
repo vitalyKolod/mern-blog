@@ -1,27 +1,32 @@
 import express from 'express'
-import jwt from 'jsonwebtoken'
+
+import mongoose from 'mongoose'
+import { registerValidation } from './validations/auth.js'
+import { validationResult } from 'express-validator'
+
+mongoose
+	.connect(
+		'mongodb+srv://kolodchenkoVitaly:kolodchenkoVit19@cluster0.hqh18zh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+	)
+	.then(() => {
+		console.log('db ok')
+	})
+	.catch(err => {
+		console.log('db error', err)
+	})
 
 const app = express()
 
 app.use(express.json())
 
-app.get('/', (req, res) => {
-	res.send('1111 Hello world')
-})
+app.post('/auth/register', registerValidation, (req, res) => {
+	const errors = validationResult(req)
+	if (!errors.isEmpty()) {
+		return res.status(400).json(errors.array())
+	}
 
-app.post('/auth/login', (req, res) => {
-	console.log(req.body)
-
-	const token = jwt.sign(
-		{
-			email: req.body.email,
-			fullName: 'Виталий Колодченко',
-		},
-		'secret123'
-	)
 	res.json({
 		success: true,
-		token,
 	})
 })
 
